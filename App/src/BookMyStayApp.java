@@ -22,123 +22,77 @@ class Reservation {
 }
 
 /**
- * CLASS - RoomInventory
- * Maintains available room count.
+ * CLASS - BookingHistory
+ *
+ * Use Case 8: Booking History & Reporting
  */
-class RoomInventory {
+class BookingHistory {
 
-    private Map<String, Integer> roomStock;
+    /** List that stores confirmed reservations */
+    private List<Reservation> confirmedReservations;
 
-    public RoomInventory() {
-        roomStock = new HashMap<>();
+    /** Initializes an empty booking history */
+    public BookingHistory() {
+        confirmedReservations = new ArrayList<>();
     }
 
-    public void addRoomType(String type, int count) {
-        roomStock.put(type, count);
+    /**
+     * Adds a confirmed reservation to booking history
+     */
+    public void addReservation(Reservation reservation) {
+        confirmedReservations.add(reservation);
     }
 
-    public boolean isAvailable(String type) {
-        return roomStock.getOrDefault(type, 0) > 0;
-    }
-
-    public void reduceRoom(String type) {
-        roomStock.put(type, roomStock.get(type) - 1);
+    /**
+     * Returns all confirmed reservations
+     */
+    public List<Reservation> getConfirmedReservations() {
+        return confirmedReservations;
     }
 }
 
 /**
- * CLASS - RoomAllocationService
- * Use Case 6: Reservation Confirmation & Room Allocation
+ * CLASS - BookingReportService
+ *
+ * Use Case 8: Booking History & Reporting
  */
-class RoomAllocationService {
-
-    /** Stores all allocated room IDs */
-    private Set<String> allocatedRoomIds;
-
-    /** Stores assigned room IDs by room type */
-    private Map<String, Set<String>> assignedRoomsByType;
-
-    /** Initializes allocation tracking structures */
-    public RoomAllocationService() {
-        allocatedRoomIds = new HashSet<>();
-        assignedRoomsByType = new HashMap<>();
-    }
+class BookingReportService {
 
     /**
-     * Confirms booking and assigns room
+     * Displays a summary report
      */
-    public void allocateRoom(Reservation reservation, RoomInventory inventory) {
+    public void generateReport(BookingHistory history) {
 
-        String roomType = reservation.getRoomType();
+        System.out.println("\nBooking History Report");
 
-        // Check availability
-        if (!inventory.isAvailable(roomType)) {
-            System.out.println("No rooms available for " + reservation.getGuestName());
-            return;
+        List<Reservation> reservations = history.getConfirmedReservations();
+
+        for (Reservation r : reservations) {
+            System.out.println("Guest: " + r.getGuestName()
+                    + ", Room Type: " + r.getRoomType());
         }
-
-        // Generate unique room ID
-        String roomId = generateRoomId(roomType);
-
-        // Store allocation
-        allocatedRoomIds.add(roomId);
-
-        assignedRoomsByType
-                .computeIfAbsent(roomType, k -> new HashSet<>())
-                .add(roomId);
-
-        // Update inventory
-        inventory.reduceRoom(roomType);
-
-        // Confirmation output
-        System.out.println("Booking confirmed for Guest: "
-                + reservation.getGuestName()
-                + ", Room ID: " + roomId);
-    }
-
-    /**
-     * Generates unique room ID
-     */
-    private String generateRoomId(String roomType) {
-
-        assignedRoomsByType.putIfAbsent(roomType, new HashSet<>());
-        int count = assignedRoomsByType.get(roomType).size() + 1;
-
-        String roomId;
-        do {
-            roomId = roomType + "-" + count++;
-        } while (allocatedRoomIds.contains(roomId));
-
-        return roomId;
     }
 }
 
 /**
- * MAIN CLASS - UseCase6RoomAllocation
+ * MAIN CLASS - UseCase8BookingHistoryReport
  */
-public class BookMyStayApp {
+public class BookMyStayApp{
 
     public static void main(String[] args) {
 
-        System.out.println("Room Allocation Processing\n");
+        System.out.println("Booking History and Reporting\n");
 
-        // Initialize inventory
-        RoomInventory inventory = new RoomInventory();
-        inventory.addRoomType("Single", 2);
-        inventory.addRoomType("Suite", 1);
+        // Initialize booking history
+        BookingHistory history = new BookingHistory();
 
-        // Create booking queue (FIFO)
-        Queue<Reservation> queue = new LinkedList<>();
-        queue.offer(new Reservation("Abhi", "Single"));
-        queue.offer(new Reservation("Subha", "Single"));
-        queue.offer(new Reservation("Vanmathi", "Suite"));
+        // Simulate confirmed reservations
+        history.addReservation(new Reservation("Abhi", "Single"));
+        history.addReservation(new Reservation("Subha", "Double"));
+        history.addReservation(new Reservation("Vanmathi", "Suite"));
 
-        // Initialize allocation service
-        RoomAllocationService allocator = new RoomAllocationService();
-
-        // Process queue
-        while (!queue.isEmpty()) {
-            allocator.allocateRoom(queue.poll(), inventory);
-        }
+        // Generate report
+        BookingReportService reportService = new BookingReportService();
+        reportService.generateReport(history);
     }
 }
