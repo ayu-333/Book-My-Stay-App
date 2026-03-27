@@ -1,106 +1,109 @@
+
+
+import java.util.Map;
+
+public class RoomSearchService {
+
+    public void searchAvailableRooms(
+            RoomInventory inventory,
+            Room singleRoom,
+            Room doubleRoom,
+            Room suiteRoom) {
+
+        System.out.println("Room Search\n");
+
+        Map<String, Integer> availability = inventory.getRoomAvailability();
+
+        // Single Room
+        if (availability.get("Single") != null && availability.get("Single") > 0) {
+            System.out.println("Single Room:");
+            System.out.println("Beds: " + singleRoom.getBeds());
+            System.out.println("Size: " + singleRoom.getSize() + " sqft");
+            System.out.println("Price per night: " + singleRoom.getPrice());
+            System.out.println("Available: " + availability.get("Single"));
+            System.out.println();
+        }
+
+        // Double Room
+        if (availability.get("Double") != null && availability.get("Double") > 0) {
+            System.out.println("Double Room:");
+            System.out.println("Beds: " + doubleRoom.getBeds());
+            System.out.println("Size: " + doubleRoom.getSize() + " sqft");
+            System.out.println("Price per night: " + doubleRoom.getPrice());
+            System.out.println("Available: " + availability.get("Double"));
+            System.out.println();
+        }
+
+        // Suite Room
+        if (availability.get("Suite") != null && availability.get("Suite") > 0) {
+            System.out.println("Suite Room:");
+            System.out.println("Beds: " + suiteRoom.getBeds());
+            System.out.println("Size: " + suiteRoom.getSize() + " sqft");
+            System.out.println("Price per night: " + suiteRoom.getPrice());
+            System.out.println("Available: " + availability.get("Suite"));
+            System.out.println();
+        }
+    }
+}
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * ABSTRACT CLASS - Room
- *
- * Represents a hotel room with core characteristics.
- */
-abstract class Room {
-
-    protected int numberOfBeds;
-    protected int squareFeet;
-    protected double pricePerNight;
-
-    public Room(int numberOfBeds, int squareFeet, double pricePerNight) {
-        this.numberOfBeds = numberOfBeds;
-        this.squareFeet = squareFeet;
-        this.pricePerNight = pricePerNight;
-    }
-
-    public void displayRoomDetails() {
-        System.out.println("Beds: " + numberOfBeds);
-        System.out.println("Size: " + squareFeet + " sqft");
-        System.out.println("Price per night: " + pricePerNight);
-    }
-}
-
-class SingleRoom extends Room {
-    public SingleRoom() { super(1, 250, 1500.0); }
-}
-
-class DoubleRoom extends Room {
-    public DoubleRoom() { super(2, 400, 2500.0); }
-}
-
-class SuiteRoom extends Room {
-    public SuiteRoom() { super(3, 750, 5000.0); }
-}
-
-/**
- * CLASS - RoomInventory
- *
- * Centralized room availability management
- */
-class RoomInventory {
-
-    private Map<String, Integer> roomAvailability;
-
-    public RoomInventory() {
-        roomAvailability = new HashMap<>();
-        initializeInventory();
-    }
-
-    /** Initializes room availability with default values */
-    private void initializeInventory() {
-        roomAvailability.put("SingleRoom", 5);
-        roomAvailability.put("DoubleRoom", 3);
-        roomAvailability.put("SuiteRoom", 2);
-    }
-
-    /** Returns current availability map */
-    public Map<String, Integer> getRoomAvailability() {
-        return roomAvailability;
-    }
-
-    /** Updates availability for a specific room type */
-    public void updateAvailability(String roomType, int count) {
-        roomAvailability.put(roomType, count);
-    }
-}
-
-/**
- * MAIN CLASS - UseCase3InventorySetup
- *
- * Demonstrates centralized room inventory
- */
 public class BookMyStayApp {
 
     public static void main(String[] args) {
 
-        System.out.println("Hotel Room Inventory Status\n");
+        // Create room definitions
+        Room singleRoom = new Room(1, 250, 1500.0);
+        Room doubleRoom = new Room(2, 400, 2500.0);
+        Room suiteRoom = new Room(3, 750, 5000.0);
 
-        // Initialize inventory
-        RoomInventory inventory = new RoomInventory();
+        // Setup inventory
+        Map<String, Integer> roomData = new HashMap<>();
+        roomData.put("Single", 5);
+        roomData.put("Double", 3);
+        roomData.put("Suite", 2);
 
-        // Create room objects
-        Room single = new SingleRoom();
-        Room doubleRoom = new DoubleRoom();
-        Room suite = new SuiteRoom();
+        RoomInventory inventory = new RoomInventory(roomData);
 
-        // Display Single Room info
-        System.out.println("Single Room:");
-        single.displayRoomDetails();
-        System.out.println("Available Rooms: " + inventory.getRoomAvailability().get("SingleRoom") + "\n");
+        // Perform search
+        RoomSearchService service = new RoomSearchService();
+        service.searchAvailableRooms(inventory, singleRoom, doubleRoom, suiteRoom);
+    }
+}
 
-        // Display Double Room info
-        System.out.println("Double Room:");
-        doubleRoom.displayRoomDetails();
-        System.out.println("Available Rooms: " + inventory.getRoomAvailability().get("DoubleRoom") + "\n");
+public class Room {
+    private int beds;
+    private int size;
+    private double price;
 
-        // Display Suite Room info
-        System.out.println("Suite Room:");
-        suite.displayRoomDetails();
-        System.out.println("Available Rooms: " + inventory.getRoomAvailability().get("SuiteRoom"));
+    public Room(int beds, int size, double price) {
+        this.beds = beds;
+        this.size = size;
+        this.price = price;
+    }
+
+    public int getBeds() {
+        return beds;
+    }
+
+    public int getSize() {
+        return size;
+    }
+
+    public double getPrice() {
+        return price;
+    }
+}
+import java.util.Map;
+
+public class RoomInventory {
+    private Map<String, Integer> roomAvailability;
+
+    public RoomInventory(Map<String, Integer> roomAvailability) {
+        this.roomAvailability = roomAvailability;
+    }
+
+    public Map<String, Integer> getRoomAvailability() {
+        return roomAvailability;
     }
 }
